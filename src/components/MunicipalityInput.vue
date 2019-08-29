@@ -4,6 +4,7 @@
     :md-options="municipalities"
     :md-open-on-focus="false"
     @md-selected="handleSelected"
+    @md-changed="handleChangedInput"
     md-layout="box"
   >
     <label>Velg kommune</label>
@@ -32,7 +33,21 @@ export default {
       });
   },
   methods: {
+    /**
+     * Emit selected municipality
+     */
     handleSelected: function(selectedMunicipality) {
+      ssbApiService.getMunicipalityCode(selectedMunicipality).then(code => {
+        this.$emit("selectedMunicipalityCode", code);
+      });
+    },
+    /**
+     * Emit when input is cleared
+     */
+    handleChangedInput: function(input) {
+      if (this.selectedMunicipality !== null && input.length === 0){
+        this.$emit("inputCleared");
+      }
     }
   }
 };

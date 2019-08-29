@@ -4,6 +4,88 @@ export default class SSBAPIService {
       "https://data.ssb.no/api/klass/v1/classifications/131/codes";
     this.sortedMunicipalityNames = [];
     this.municipalityToCode = new Map();
+
+    this.SSB_MUNICIPALITY_INHABITANTS_URL =
+      "https://data.ssb.no/api/v0/no/table/05231/";
+  }
+
+  /**
+   * Get number of inhabitants in municipality
+   * @param {string} municipalityCode SSB code for municipality
+   */
+  getNumberOfInhabitants(municipalityCode) {
+    let year = "2018";
+    let jsonQuery = {
+      query: [
+        {
+          code: "Region",
+          selection: {
+            filter: "agg_single:KommNyeste",
+            values: [municipalityCode]
+          }
+        },
+        {
+          code: "ContentsCode",
+          selection: {
+            filter: "item",
+            values: ["Folkemengde"]
+          }
+        },
+        {
+          code: "Tid",
+          selection: {
+            filter: "item",
+            values: [year]
+          }
+        }
+      ],
+      response: {
+        format: "json-stat2"
+      }
+    };
+    return new Promise((resolve, reject) => {
+      this._fetchNumInhabitantsFromServer(JSON.stringify(jsonQuery)).then(response => {
+        resolve(response);
+      });
+    });
+  }
+
+  /**
+   * 
+   * @param {string} jsonQuery A JSON string query as defined by the API
+   */
+  _fetchNumInhabitantsFromServer(jsonQuery) {
+    // To find API use https://data.ssb.no/api/v0/en/console/ and enter table 05231.
+    return new Promise((resolve, reject) => {
+      fetch(this.SSB_MUNICIPALITY_INHABITANTS_URL, {
+        method: "POST",
+        body: jsonQuery
+      }).then(response => {
+        response.json().then(data => {
+          resolve(data);
+        })
+      });
+    });
+  }
+
+  /**
+   * Get official SSB municipality code by providing municipality name
+   * @param {string} municipalityName
+   */
+  getMunicipalityCode(municipalityName) {
+    return new Promise((resolve, reject) => {
+      if (this.municipalityToCode.size === 0) {
+        this._fetchNamesAndCodesFromServer()
+          .then(() => {
+            resolve(this.municipalityToCode.get(municipalityName));
+          })
+          .catch(err => {
+            reject(err);
+          });
+      } else {
+        resolve(this.municipalityToCode.get(municipalityName));
+      }
+    });
   }
 
   /**
@@ -12,7 +94,7 @@ export default class SSBAPIService {
   getSortedMunicipalityNames() {
     return new Promise((resolve, reject) => {
       if (this.sortedMunicipalityNames.length === 0) {
-        this._fetchDataFromServer()
+        this._fetchNamesAndCodesFromServer()
           .then(() => {
             resolve(this.sortedMunicipalityNames);
           })
@@ -25,7 +107,7 @@ export default class SSBAPIService {
     });
   }
 
-  _fetchDataFromServer() {
+  _fetchNamesAndCodesFromServer() {
     return new Promise((resolve, reject) => {
       this._fetchMunicipalitiesAndCodes()
         .then(data => {
