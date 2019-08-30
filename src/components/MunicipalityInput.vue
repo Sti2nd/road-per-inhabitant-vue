@@ -36,9 +36,9 @@ export default {
     /**
      * Emit selected municipality
      */
-    handleSelected: function(selectedMunicipality) {
-      ssbApiService.getMunicipalityCode(selectedMunicipality).then(code => {
-        this.$emit("selectedMunicipalityCode", code);
+    handleSelected: function(selectedMunicipalityName) {
+      ssbApiService.getMunicipalityCode(selectedMunicipalityName).then(code => {
+        this.$emit("selectedMunicipality", {"code": code, "name": selectedMunicipalityName});
       });
     },
     /**

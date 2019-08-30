@@ -2,13 +2,14 @@ export default class SSBAPIService {
   constructor() {
     this.SSB_MUNICIPALITY_CODES_URL =
       "https://data.ssb.no/api/klass/v1/classifications/131/codes";
-    this.sortedMunicipalityNames = [];
-    this.municipalityToCode = new Map();
-
     this.SSB_MUNICIPALITY_INHABITANTS_URL =
       "https://data.ssb.no/api/v0/no/table/05231/";
+
+    this.sortedMunicipalityNames = [];
+    this.municipalityToCode = new Map();
   }
 
+  
   /**
    * Get number of inhabitants in municipality
    * @param {string} municipalityCode SSB code for municipality
