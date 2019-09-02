@@ -2,7 +2,9 @@
   <div class="municipalityView">
     <h3>
       Kommune {{ municipalityNumber }}
-      <span v-show="selectedMunicipality">- {{ selectedMunicipality }}</span>
+      <span
+        v-show="selectedMunicipality"
+      >- {{ selectedMunicipality }}</span>
     </h3>
     <MunicipalityInput
       :municipalities="municipalities"
@@ -24,6 +26,14 @@
         <br />per innbygger i kommunen.
       </p>
     </div>
+    <div v-if="mapCenter" id="mapContainer">
+      <l-map :zoom="9" :center="mapCenter">
+        <l-tile-layer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          :attribution="mapAttribution"
+        />
+      </l-map>
+    </div>
   </div>
 </template>
 
@@ -31,13 +41,19 @@
 import MunicipalityInput from "./MunicipalityInput";
 import SsbApiService from "../SsbApiService";
 import VegvesenApiService from "../VegvesenApiService";
+import { latLng } from "leaflet";
+import { LMap, LTileLayer} from "vue2-leaflet";
+import 'leaflet/dist/leaflet.css';
+
 const ssbApiService = new SsbApiService();
 const vegvesenApiService = new VegvesenApiService();
 
 export default {
   name: "MunicipalityView",
   components: {
-    MunicipalityInput
+    MunicipalityInput,
+    LMap,
+    LTileLayer
   },
   props: {
     municipalityNumber: Number,
@@ -45,16 +61,21 @@ export default {
   },
   data: () => ({
     selectedMunicipality: null,
+    selectedMunicipalityCode: null,
     numberOfInhabitants: null,
     roadLength: null,
     loadingRoadLength: false,
-    loadingInhabitants: false
+    loadingInhabitants: false,
+    mapAttribution:
+      "Map data © <a href='https://openstreetmap.org'>OpenStreetMap</a> contributors",
+    mapCenter: null
   }),
   methods: {
     handleSelectedMunicipality: function(municipalityObj) {
       this.loadingRoadLength = true;
       this.loadingInhabitants = true;
       this.selectedMunicipality = municipalityObj["name"];
+      this.selectedMunicipalityCode = municipalityObj["code"];
       ssbApiService
         .getNumberOfInhabitants(municipalityObj["code"])
         .then(response => {
@@ -67,15 +88,27 @@ export default {
           this.loadingRoadLength = false;
           this.roadLength = length;
         });
+      vegvesenApiService
+        .getMunicipalityCoordinates(municipalityObj["code"])
+        .then(coordinates => {
+          let reversedCoordinates = [coordinates[1], coordinates[0]];
+          this.mapCenter = reversedCoordinates;
+        });
     },
     handleInputCleared: function() {
       this.numberOfInhabitants = null;
       this.roadLength = null;
       this.selectedMunicipality = null;
+      this.selectedMunicipalityCode = null;
+      this.mapCenter = null;
     }
   }
 };
 </script>
 
 <style scoped>
+#mapContainer {
+  width: 100%;
+  height: 100%;
+}
 </style>
