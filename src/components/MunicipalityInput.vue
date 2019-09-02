@@ -20,18 +20,12 @@ const ssbApiService = new SsbApiService();
 
 export default {
   name: "MunicipalityInput",
-  props: {},
+  props: {
+    municipalities: Array
+  },
   data: () => ({
-    municipalities: [],
     selectedMunicipality: null
   }),
-  created: function() {
-    ssbApiService
-      .getSortedMunicipalityNames()
-      .then(sortedMunicipalitesArray => {
-        this.municipalities = sortedMunicipalitesArray;
-      });
-  },
   methods: {
     /**
      * Emit selected municipality

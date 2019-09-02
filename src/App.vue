@@ -1,23 +1,35 @@
 <template>
   <div id="app">
     <h1>Bilvei per innbygger</h1>
-    <div id="municipalityContainer">
-      <MunicipalityView v-for="number in numbers" :key="number" :municipalityNumber="number"></MunicipalityView>
-    </div>
+    <MunicipalityContainer :key="municipalityContainerKey" @connectionTrouble="showSnackbar = true"></MunicipalityContainer>
+    <md-snackbar md-position="center" :md-duration="Infinity" :md-active.sync="showSnackbar">
+      <span>Connection problems. Click the button to retry.</span>
+      <md-button class="md-primary" @click="retryAllRequests">Retry</md-button>
+    </md-snackbar>
   </div>
 </template>
 
 <script>
 import MunicipalityView from "./components/MunicipalityView";
+import MunicipalityContainer from "./components/MunicipalityContainer";
 
 export default {
   name: "app",
   components: {
-    MunicipalityView
+    MunicipalityView,
+    MunicipalityContainer
   },
   data: () => ({
-    numbers: [1, 2]
-  })
+    showSnackbar: false,
+    municipalityContainerKey: 1
+  }),
+  methods: {
+    retryAllRequests: function() {
+      // Force MunicipalityContainer to update by changing its key
+      this.municipalityContainerKey += 1;
+      this.showSnackbar = false;
+    }
+  }
 };
 </script>
 
@@ -33,14 +45,5 @@ export default {
 
 #app h1 {
   margin-bottom: 1em;
-}
-
-#municipalityContainer {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.municipalityView {
-  flex-grow: 1;
 }
 </style>

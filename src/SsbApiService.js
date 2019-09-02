@@ -153,6 +153,8 @@ export default class SSBAPIService {
           .catch(err => {
             reject(err);
           });
+      }).catch(err => {
+        reject(err);
       });
     });
   };

@@ -5,6 +5,7 @@
       <span v-show="selectedMunicipality">- {{ selectedMunicipality }}</span>
     </h3>
     <MunicipalityInput
+      :municipalities="municipalities"
       @selectedMunicipality="handleSelectedMunicipality"
       @inputCleared="handleInputCleared"
     ></MunicipalityInput>
@@ -39,7 +40,8 @@ export default {
     MunicipalityInput
   },
   props: {
-    municipalityNumber: Number
+    municipalityNumber: Number,
+    municipalities: Array
   },
   data: () => ({
     selectedMunicipality: null,
