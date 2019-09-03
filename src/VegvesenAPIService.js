@@ -107,7 +107,7 @@ export default class VegvesenApiService {
   }
 
   /**
-   * Returns coordinates?
+   * Returns GeoJSON
    * @param {number} municipalityCode Official SSB municipality code
    */
   getMunicipalityCoordinates(municipalityCode) {

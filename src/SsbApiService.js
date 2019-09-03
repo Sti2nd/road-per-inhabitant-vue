@@ -160,26 +160,29 @@ export default class SSBAPIService {
   };
 
   /**
-   * Insert into an already inserted array
+   * Insert into an already sorted array
    * @param array A sorted array
    */
   insertIntoSortedArray(array, element) {
+    let array2 = array.slice();
     // The following use "insertion sort" to insert and maintain order
-    if (array.length === 0) {
-      array.push(element);
+    if (array2.length === 0) {
+      array2.push(element);
+      return array2;
     } else {
-      for (let i = 0; i < array.length; i++) {
-        if (array[i] < element) {
-          if (i + 1 === array.length) {
-            array.splice(i + 1, 0, element);
-            break;
+      for (let i = 0; i < array2.length; i++) {
+        if (array2[i] < element) {
+          if (i + 1 === array2.length) {
+            array2.splice(i + 1, 0, element);
+            return array2;
           }
           continue;
         } else {
-          array.splice(i, 0, element);
-          break;
+          array2.splice(i, 0, element);
+          return array2;
         }
       }
+      return array2;
     }
   }
 }

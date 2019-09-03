@@ -6,7 +6,8 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "start": "vue-cli-service serve",
-    "test:unit": "vue-cli-service test:unit"
+    "test": "vue-cli-service test:unit",
+    "watch-tests": "vue-cli-service test:unit --watch"
   },
   "dependencies": {
     "core-js": "^2.6.5",
