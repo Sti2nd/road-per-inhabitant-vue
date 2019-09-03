@@ -3,8 +3,8 @@
     <h3>
       Kommune {{ municipalityNumber }}
       <span
-        v-show="selectedMunicipality"
-      >- {{ selectedMunicipality }}</span>
+        v-show="municipality.name"
+      >- {{ municipality.name }}</span>
     </h3>
     <MunicipalityInput
       :municipalities="municipalities"
@@ -12,17 +12,17 @@
       @inputCleared="handleInputCleared"
     ></MunicipalityInput>
     <div class="municipalityInfo">
-      <p class="md-body-1" v-show="numberOfInhabitants">har {{ numberOfInhabitants }} innbyggere</p>
+      <p class="md-body-1" v-show="municipality.numInhabitants">har {{ municipality.numInhabitants }} innbyggere</p>
       <div v-show="loadingInhabitants == true">
         <md-progress-spinner :md-diameter="30" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
       </div>
-      <p class="md-body-1" v-show="roadLength">og har {{ roadLength }} meter bilvei</p>
+      <p class="md-body-1" v-show="municipality.roadLength">og har {{ municipality.roadLength }} meter bilvei</p>
       <div v-show="loadingRoadLength == true">
         <md-progress-spinner :md-diameter="30" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
       </div>
-      <p v-show="numberOfInhabitants && roadLength">
+      <p v-show="municipality.numInhabitants && municipality.roadLength">
         som betyr at det er
-        <strong>{{ Number.parseFloat(roadLength / numberOfInhabitants).toFixed(2) }}</strong> meter bilvei
+        <strong>{{ Number.parseFloat(municipality.roadLength / municipality.numInhabitants).toFixed(2) }}</strong> meter bilvei
         <br />per innbygger i kommunen.
       </p>
     </div>
@@ -32,7 +32,7 @@
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           :attribution="mapAttribution"
         />
-        <l-geo-json ref="geojson" :geojson="municipalityShape"></l-geo-json>
+        <l-geo-json ref="geojson" :geojson="municipality.polygon"></l-geo-json>
       </l-map>
     </div>
   </div>
@@ -62,15 +62,17 @@ export default {
     municipalities: Array
   },
   data: () => ({
-    selectedMunicipality: null,
-    selectedMunicipalityCode: null,
-    numberOfInhabitants: null,
-    roadLength: null,
+    municipality: {
+      name: null,
+      code: null,
+      numInhabitants: null,
+      roadLength: null,
+      polygon: null
+    },
     loadingRoadLength: false,
     loadingInhabitants: false,
     mapAttribution:
       "Map data © <a href='https://openstreetmap.org' target='_blank'>OpenStreetMap</a> contributors",
-    municipalityShape: null,
     mapBounds: null,
     showMap: false
   }),
@@ -78,24 +80,24 @@ export default {
     handleSelectedMunicipality: function(municipalityObj) {
       this.loadingRoadLength = true;
       this.loadingInhabitants = true;
-      this.selectedMunicipality = municipalityObj["name"];
-      this.selectedMunicipalityCode = municipalityObj["code"];
+      this.municipality.name = municipalityObj["name"];
+      this.municipality.code = municipalityObj["code"];
       ssbApiService
         .getNumberOfInhabitants(municipalityObj["code"])
         .then(response => {
           this.loadingInhabitants = false;
-          this.numberOfInhabitants = response["value"][0];
+          this.municipality.numInhabitants = response["value"][0];
         });
       vegvesenApiService
         .getLengthOfRoads(municipalityObj["code"])
         .then(length => {
           this.loadingRoadLength = false;
-          this.roadLength = length;
+          this.municipality.roadLength = length;
         });
       vegvesenApiService
         .getMunicipalityCoordinates(municipalityObj["code"])
         .then(coordinates => {
-          this.municipalityShape = coordinates;
+          this.municipality.polygon = coordinates;
           this.showMap = true;
           this.$nextTick(() => {
             let bounds = this.$refs.geojson.mapObject.getBounds();
@@ -105,10 +107,11 @@ export default {
     },
     handleInputCleared: function() {
       this.showMap = false;
-      this.numberOfInhabitants = null;
-      this.roadLength = null;
-      this.selectedMunicipality = null;
-      this.selectedMunicipalityCode = null;
+      this.municipality.numInhabitants = null;
+      this.municipality.roadLength = null;
+      this.municipality.name = null;
+      this.municipality.code = null;
+      this.municipality.polygon = null;
     }
   }
 };
