@@ -40,8 +40,4 @@ export default {
   display: flex;
   flex-wrap: wrap;
 }
-
-.municipalityView {
-  flex-grow: 1;
-}
 </style>

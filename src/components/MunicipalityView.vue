@@ -26,12 +26,13 @@
         <br />per innbygger i kommunen.
       </p>
     </div>
-    <div v-if="mapCenter" id="mapContainer">
-      <l-map :zoom="9" :center="mapCenter">
+    <div v-if="showMap" id="mapContainer">
+      <l-map ref="myMap" :zoom="9" :bounds="mapBounds">
         <l-tile-layer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           :attribution="mapAttribution"
         />
+        <l-geo-json ref="geojson" :geojson="municipalityShape"></l-geo-json>
       </l-map>
     </div>
   </div>
@@ -42,8 +43,8 @@ import MunicipalityInput from "./MunicipalityInput";
 import SsbApiService from "../SsbApiService";
 import VegvesenApiService from "../VegvesenApiService";
 import { latLng } from "leaflet";
-import { LMap, LTileLayer} from "vue2-leaflet";
-import 'leaflet/dist/leaflet.css';
+import { LMap, LTileLayer, LGeoJson } from "vue2-leaflet";
+import "leaflet/dist/leaflet.css";
 
 const ssbApiService = new SsbApiService();
 const vegvesenApiService = new VegvesenApiService();
@@ -53,7 +54,8 @@ export default {
   components: {
     MunicipalityInput,
     LMap,
-    LTileLayer
+    LTileLayer,
+    LGeoJson
   },
   props: {
     municipalityNumber: Number,
@@ -67,8 +69,10 @@ export default {
     loadingRoadLength: false,
     loadingInhabitants: false,
     mapAttribution:
-      "Map data © <a href='https://openstreetmap.org'>OpenStreetMap</a> contributors",
-    mapCenter: null
+      "Map data © <a href='https://openstreetmap.org' target='_blank'>OpenStreetMap</a> contributors",
+    municipalityShape: null,
+    mapBounds: null,
+    showMap: false
   }),
   methods: {
     handleSelectedMunicipality: function(municipalityObj) {
@@ -91,16 +95,20 @@ export default {
       vegvesenApiService
         .getMunicipalityCoordinates(municipalityObj["code"])
         .then(coordinates => {
-          let reversedCoordinates = [coordinates[1], coordinates[0]];
-          this.mapCenter = reversedCoordinates;
+          this.municipalityShape = coordinates;
+          this.showMap = true;
+          this.$nextTick(() => {
+            let bounds = this.$refs.geojson.mapObject.getBounds();
+            this.$refs.myMap.mapObject.fitBounds(bounds);
+          });
         });
     },
     handleInputCleared: function() {
+      this.showMap = false;
       this.numberOfInhabitants = null;
       this.roadLength = null;
       this.selectedMunicipality = null;
       this.selectedMunicipalityCode = null;
-      this.mapCenter = null;
     }
   }
 };
@@ -108,7 +116,12 @@ export default {
 
 <style scoped>
 #mapContainer {
-  width: 100%;
-  height: 100%;
+  height: 50%;
+}
+
+.municipalityView {
+  flex-grow: 1;
+  min-width: 300px;
+  height: 80vh;
 }
 </style>

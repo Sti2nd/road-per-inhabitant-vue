@@ -1,4 +1,5 @@
 import proj4 from "proj4";
+import { Geometry } from "wkx";
 
 export default class VegvesenApiService {
   // https://api.vegdata.no/
@@ -118,31 +119,27 @@ export default class VegvesenApiService {
               result
                 .json()
                 .then(data => {
-                  data["egenskaper"].forEach(egenskap => {
-                    if (egenskap["datatype_tekst"] === "GeomPunkt") {
-                      // Define the coordinate systems using proj.4 strings
-                      let fromCoordinateSystem =
-                        "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +vunits=m +no_defs";
-                      let toCoordinateSystem =
-                        "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs ";
-                      // WKT => [x, y]
-                      let coordinates = egenskap["verdi"]
-                        .split(" ")
-                        .filter(elem => elem !== "POINT")
-                        .map(elem =>
-                          Number.parseFloat(
-                            elem.replace("(", "").replace(")", "")
-                          )
-                        );
-                      let transformedCoordinates = proj4(
-                        fromCoordinateSystem,
-                        toCoordinateSystem,
-                        coordinates
-                      );
-                      resolve(transformedCoordinates);
-                    }
-                  });
-                  resolve();
+                  // Define the coordinate systems using proj.4 strings
+                  let fromCoordinateSystem =
+                    "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +vunits=m +no_defs";
+                  let toCoordinateSystem =
+                    "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs ";
+                  // Get municipality shape
+                  let polygonWkt = data["geometri"]["wkt"];
+                  let geom = Geometry.parse(polygonWkt)
+                  let polygonGeojson = geom.toGeoJSON()
+                  // Transform coordinates
+                  for (let i = 0; i < polygonGeojson.coordinates[0].length; i++){
+                    let coordinates = polygonGeojson.coordinates[0][i];
+                    let transformedCoordinates = proj4(
+                      fromCoordinateSystem,
+                      toCoordinateSystem,
+                      coordinates
+                    );
+                    polygonGeojson.coordinates[0][i] = transformedCoordinates;
+                  }
+                  resolve(polygonGeojson);
+                  reject();
                 })
                 .catch(err => reject(err));
             })
