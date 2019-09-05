@@ -43,7 +43,6 @@ import MunicipalityInput from "./MunicipalityInput";
 import SsbApiService from "../SsbApiService";
 import VegvesenApiService from "../VegvesenApiService";
 import { LMap, LTileLayer, LGeoJson } from "vue2-leaflet";
-import "leaflet/dist/leaflet.css";
 
 const ssbApiService = new SsbApiService();
 const vegvesenApiService = new VegvesenApiService();

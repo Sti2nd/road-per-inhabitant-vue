@@ -7,6 +7,7 @@ import MdSnackbar from 'vue-material';
 import MdButton from 'vue-material';
 import 'vue-material/dist/vue-material.min.css';
 import 'vue-material/dist/theme/default.css';
+import "leaflet/dist/leaflet.css";
 
 
 Vue.config.productionTip = false;
