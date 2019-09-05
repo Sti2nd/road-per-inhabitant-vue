@@ -107,44 +107,51 @@ export default class VegvesenApiService {
   }
 
   /**
-   * Returns GeoJSON
+   * Returns Promise that resolves a GeoJSON
    * @param {number} municipalityCode Official SSB municipality code
    */
   getMunicipalityCoordinates(municipalityCode) {
     return new Promise((resolve, reject) => {
       this._getMunicipalityURL(municipalityCode, this.HEADERS)
         .then(url => {
-          fetch(url)
-            .then(result => {
-              result
-                .json()
-                .then(data => {
-                  // Define the coordinate systems using proj.4 strings
-                  let fromCoordinateSystem =
-                    "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +vunits=m +no_defs";
-                  let toCoordinateSystem =
-                    "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs ";
-                  // Get municipality shape
-                  let polygonWkt = data["geometri"]["wkt"];
-                  let geom = Geometry.parse(polygonWkt)
-                  let polygonGeojson = geom.toGeoJSON()
-                  // Transform coordinates
-                  for (let i = 0; i < polygonGeojson.coordinates[0].length; i++){
-                    let coordinates = polygonGeojson.coordinates[0][i];
-                    let transformedCoordinates = proj4(
-                      fromCoordinateSystem,
-                      toCoordinateSystem,
-                      coordinates
-                    );
-                    polygonGeojson.coordinates[0][i] = transformedCoordinates;
-                  }
-                  resolve(polygonGeojson);
-                  reject();
-                })
-                .catch(err => reject(err));
-            })
-            .catch(err => reject(err));
+          return this._fetchMunicipalityShape(url);
         })
+        .then(polygonWkt => {
+          // Define the coordinate systems using proj.4 strings
+          let fromCoordinateSystem =
+            "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +vunits=m +no_defs";
+          let toCoordinateSystem =
+            "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs ";
+          // Get municipality shape
+          let geom = Geometry.parse(polygonWkt);
+          let polygonGeojson = geom.toGeoJSON();
+          // Transform coordinates
+          for (let i = 0; i < polygonGeojson.coordinates[0].length; i++) {
+            let coordinates = polygonGeojson.coordinates[0][i];
+            let transformedCoordinates = proj4(
+              fromCoordinateSystem,
+              toCoordinateSystem,
+              coordinates
+            );
+            polygonGeojson.coordinates[0][i] = transformedCoordinates;
+          }
+          resolve(polygonGeojson);
+        })
+        .catch(err => reject(err));
+    });
+  }
+
+  /**
+   * Returns Promise that resolves the WKT (well known text) of the municipality shape
+   * @param {string} url Endpoint
+   */
+  _fetchMunicipalityShape(url) {
+    return new Promise((resolve, reject) => {
+      fetch(url)
+        .then(result => {
+          return result.json();
+        })
+        .then(data => resolve(data["geometri"]["wkt"]))
         .catch(err => reject(err));
     });
   }
@@ -160,17 +167,15 @@ export default class VegvesenApiService {
         headers: headers
       })
         .then(result => {
-          result
-            .json()
-            .then(data => {
-              data.forEach(municipality => {
-                if (municipality["nummer"] == municipalityCode) {
-                  resolve(municipality["vegobjekt"]["href"]);
-                }
-              });
-              reject("Could not find the municipality");
-            })
-            .catch(err => reject(err));
+          return result.json();
+        })
+        .then(data => {
+          data.forEach(municipality => {
+            if (municipality["nummer"] == municipalityCode) {
+              resolve(municipality["vegobjekt"]["href"]);
+            }
+          });
+          reject("Could not find the municipality");
         })
         .catch(err => reject(err));
     });

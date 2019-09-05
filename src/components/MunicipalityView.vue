@@ -42,7 +42,6 @@
 import MunicipalityInput from "./MunicipalityInput";
 import SsbApiService from "../SsbApiService";
 import VegvesenApiService from "../VegvesenApiService";
-import { latLng } from "leaflet";
 import { LMap, LTileLayer, LGeoJson } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -84,9 +83,9 @@ export default {
       this.municipality.code = municipalityObj["code"];
       ssbApiService
         .getNumberOfInhabitants(municipalityObj["code"])
-        .then(response => {
+        .then(numInhabitants => {
           this.loadingInhabitants = false;
-          this.municipality.numInhabitants = response["value"][0];
+          this.municipality.numInhabitants = numInhabitants;
         });
       vegvesenApiService
         .getLengthOfRoads(municipalityObj["code"])

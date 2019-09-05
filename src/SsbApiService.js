@@ -9,7 +9,6 @@ export default class SSBAPIService {
     this.municipalityToCode = new Map();
   }
 
-  
   /**
    * Get number of inhabitants in municipality
    * @param {string} municipalityCode SSB code for municipality
@@ -45,27 +44,32 @@ export default class SSBAPIService {
       }
     };
     return new Promise((resolve, reject) => {
-      this._fetchNumInhabitantsFromServer(JSON.stringify(jsonQuery)).then(response => {
-        resolve(response);
-      });
+      this._fetchNumInhabitantsFromServer(JSON.stringify(jsonQuery))
+        .then(response => {
+          resolve(response["value"][0]);
+        })
+        .catch(err => reject(err));
     });
   }
 
   /**
-   * 
+   *
    * @param {string} jsonQuery A JSON string query as defined by the API
    */
   _fetchNumInhabitantsFromServer(jsonQuery) {
-    // To find API use https://data.ssb.no/api/v0/en/console/ and enter table 05231.
+    // To find API use https://data.ssb.no/api/v0/en/console/ and enter table
+    // 05231.
     return new Promise((resolve, reject) => {
       fetch(this.SSB_MUNICIPALITY_INHABITANTS_URL, {
         method: "POST",
         body: jsonQuery
-      }).then(response => {
-        response.json().then(data => {
-          resolve(data);
+      })
+        .then(response => {
+          response.json().then(data => {
+            resolve(data);
+          });
         })
-      });
+        .catch(err => reject(err));
     });
   }
 
@@ -76,7 +80,7 @@ export default class SSBAPIService {
   getMunicipalityCode(municipalityName) {
     return new Promise((resolve, reject) => {
       if (this.municipalityToCode.size === 0) {
-        this._fetchNamesAndCodesFromServer()
+        this._issueRequestForNamesAndCodes()
           .then(() => {
             resolve(this.municipalityToCode.get(municipalityName));
           })
@@ -95,8 +99,9 @@ export default class SSBAPIService {
   getSortedMunicipalityNames() {
     return new Promise((resolve, reject) => {
       if (this.sortedMunicipalityNames.length === 0) {
-        this._fetchNamesAndCodesFromServer()
-          .then(() => {
+        this._issueRequestForNamesAndCodes()
+          .then(newArray => {
+            this.sortedMunicipalityNames = newArray;
             resolve(this.sortedMunicipalityNames);
           })
           .catch(err => {
@@ -108,18 +113,29 @@ export default class SSBAPIService {
     });
   }
 
-  _fetchNamesAndCodesFromServer() {
+  /**
+   * Calls another function to request data and then handles the data.
+   * @param {Array<string>} sortedMunicipalityNames An array with municipality names
+   * sorted lexicographical
+   */
+  _issueRequestForNamesAndCodes() {
     return new Promise((resolve, reject) => {
-      this._fetchMunicipalitiesAndCodes()
+      this._fetchMunicipalityInfo()
         .then(data => {
+          let newArray = [];
           data["codes"].forEach(elementObj => {
-            this.municipalityToCode.set(elementObj["name"], elementObj["code"]);
-            this.insertIntoSortedArray(
-              this.sortedMunicipalityNames,
-              elementObj["name"]
-            );
-            resolve("Success");
+            if (Number.parseInt(elementObj["code"]) !== 9999) {
+              this.municipalityToCode.set(
+                elementObj["name"],
+                elementObj["code"]
+              );
+              newArray = this.insertIntoSortedArray(
+                newArray,
+                elementObj["name"]
+              );
+            }
           });
+          resolve(newArray);
         })
         .catch(err => {
           reject(err);
@@ -130,7 +146,7 @@ export default class SSBAPIService {
   /**
    * Request data from API
    */
-  _fetchMunicipalitiesAndCodes = () => {
+  _fetchMunicipalityInfo = () => {
     // SSB documentation https://data.ssb.no/api/klass/v1/api-guide.html
 
     let currentYear = new Date().getFullYear();
@@ -144,18 +160,20 @@ export default class SSBAPIService {
         headers: {
           Accept: "application/json"
         }
-      }).then(response => {
-        response
-          .json()
-          .then(data => {
-            resolve(data);
-          })
-          .catch(err => {
-            reject(err);
-          });
-      }).catch(err => {
-        reject(err);
-      });
+      })
+        .then(response => {
+          response
+            .json()
+            .then(data => {
+              resolve(data);
+            })
+            .catch(err => {
+              reject(err);
+            });
+        })
+        .catch(err => {
+          reject(err);
+        });
     });
   };
 
