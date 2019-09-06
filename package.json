@@ -7,7 +7,6 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "start": "vue-cli-service serve",
-    "test:e2e": "jest --config=jest.e2e.config.js --runInBand",
     "test:unit": "vue-cli-service test:unit",
     "watch-tests": "vue-cli-service test:unit --watch"
   },

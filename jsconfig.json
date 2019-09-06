@@ -1,6 +1,6 @@
 {
-/*   "typeAcquisition": {
+  "typeAcquisition": {
     "include": ["jest"]
-  }, */
+  },
   "exclude": ["node_modules", "dist", ".vscode"]
 }

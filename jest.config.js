@@ -13,6 +13,9 @@ module.exports = {
   transformIgnorePatterns: [
     '/node_modules/'
   ],
+  testPathIgnorePatterns: [
+    "/tests/e2e/"
+  ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
   },
@@ -20,7 +23,8 @@ module.exports = {
     'jest-serializer-vue'
   ],
   testMatch: [
-    '**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)'
+    '**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)',
+    "**/?(*.)+(spec|test).[jt]s?(x)"
   ],
   testURL: 'http://localhost/',
   watchPlugins: [
