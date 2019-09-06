@@ -65,10 +65,9 @@ export default class SSBAPIService {
         body: jsonQuery
       })
         .then(response => {
-          response.json().then(data => {
-            resolve(data);
-          });
+          return response.json();
         })
+        .then(data => resolve(data))
         .catch(err => reject(err));
     });
   }
@@ -84,9 +83,7 @@ export default class SSBAPIService {
           .then(() => {
             resolve(this.municipalityToCode.get(municipalityName));
           })
-          .catch(err => {
-            reject(err);
-          });
+          .catch(err => reject(err));
       } else {
         resolve(this.municipalityToCode.get(municipalityName));
       }
@@ -104,9 +101,7 @@ export default class SSBAPIService {
             this.sortedMunicipalityNames = newArray;
             resolve(this.sortedMunicipalityNames);
           })
-          .catch(err => {
-            reject(err);
-          });
+          .catch(err => reject(err));
       } else {
         resolve(this.sortedMunicipalityNames);
       }
@@ -137,9 +132,7 @@ export default class SSBAPIService {
           });
           resolve(newArray);
         })
-        .catch(err => {
-          reject(err);
-        });
+        .catch(err => reject(err));
     });
   }
 
@@ -162,18 +155,10 @@ export default class SSBAPIService {
         }
       })
         .then(response => {
-          response
-            .json()
-            .then(data => {
-              resolve(data);
-            })
-            .catch(err => {
-              reject(err);
-            });
+          return response.json();
         })
-        .catch(err => {
-          reject(err);
-        });
+        .then(data => resolve(data))
+        .catch(err => reject(err));
     });
   };
 

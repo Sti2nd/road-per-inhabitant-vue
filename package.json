@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "build": "vue-cli-service build",
+    "test": "vue-cli-service test:unit",
     "lint": "vue-cli-service lint",
     "start": "vue-cli-service serve",
-    "test": "vue-cli-service test:unit",
+    "test:e2e": "vue-cli-service test:e2e",
     "watch-tests": "vue-cli-service test:unit --watch"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.5.5",
     "@vue/cli-plugin-babel": "^3.11.0",
+    "@vue/cli-plugin-e2e-cypress": "^3.11.0",
     "@vue/cli-plugin-eslint": "^3.11.0",
     "@vue/cli-plugin-unit-jest": "^3.11.0",
     "@vue/cli-service": "^3.11.0",

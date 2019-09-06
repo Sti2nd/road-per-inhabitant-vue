@@ -82,25 +82,23 @@ export default class VegvesenApiService {
         headers: headers
       })
         .then(result => {
-          result
-            .json()
-            .then(data => {
-              if (data["metadata"]["returnert"] > 0) {
-                roads.push(data["objekter"]);
-                let nextUrl = data["metadata"]["neste"]["href"];
-                // recurse
-                this._fetchRoadsFromServer(nextUrl, headers).then(data => {
-                  // On the way back / unnesting
-                  // Push data received from further down the recursion
-                  roads.push(data);
-                  resolve(roads.flat(1));
-                });
-              } else {
-                // At the bottom of the recursion
-                resolve([]);
-              }
-            })
-            .catch(err => reject(err));
+          return result.json();
+        })
+        .then(data => {
+          if (data["metadata"]["returnert"] > 0) {
+            roads.push(data["objekter"]);
+            let nextUrl = data["metadata"]["neste"]["href"];
+            // recurse
+            this._fetchRoadsFromServer(nextUrl, headers).then(data => {
+              // On the way back / unnesting
+              // Push data received from further down the recursion
+              roads.push(data);
+              resolve(roads.flat(1));
+            });
+          } else {
+            // At the bottom of the recursion
+            resolve([]);
+          }
         })
         .catch(err => reject(err));
     });
