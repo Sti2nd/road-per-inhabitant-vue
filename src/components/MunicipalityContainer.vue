@@ -12,6 +12,7 @@
 <script>
 import MunicipalityView from "./MunicipalityView";
 import SsbApiService from "../SsbApiService";
+import { reject } from 'q';
 const ssbApiService = new SsbApiService();
 
 export default {
@@ -30,6 +31,7 @@ export default {
         this.municipalities = sortedMunicipalitesArray;
       }).catch(err => {
         this.$emit("connectionTrouble");
+        reject(err);
       })
   },
 };
