@@ -7,7 +7,7 @@ module.exports = {
     'js',
   ],
   testMatch: [
-    '**/test/e2e/**/*.spec.(js|ts)',
+    '**/tests/e2e/**/*.spec.(js|ts)',
   ],
   watchPlugins: [
   ],

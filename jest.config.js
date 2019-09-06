@@ -1,4 +1,5 @@
 module.exports = {
+  preset: 'jest-puppeteer',
   moduleFileExtensions: [
     'js',
     'jsx',
