@@ -81,9 +81,7 @@ export default class VegvesenApiService {
       fetch(url, {
         headers: headers
       })
-        .then(result => {
-          return result.json();
-        })
+        .then(result => result.json())
         .then(data => {
           if (data["metadata"]["returnert"] > 0) {
             roads.push(data["objekter"]);
@@ -111,9 +109,7 @@ export default class VegvesenApiService {
   getMunicipalityCoordinates(municipalityCode) {
     return new Promise((resolve, reject) => {
       this._getMunicipalityURL(municipalityCode, this.HEADERS)
-        .then(url => {
-          return this._fetchMunicipalityShape(url);
-        })
+        .then(url => this._fetchMunicipalityShape(url))
         .then(polygonWkt => {
           // Define the coordinate systems using proj.4 strings
           let fromCoordinateSystem =
@@ -146,9 +142,7 @@ export default class VegvesenApiService {
   _fetchMunicipalityShape(url) {
     return new Promise((resolve, reject) => {
       fetch(url)
-        .then(result => {
-          return result.json();
-        })
+        .then(result => result.json())
         .then(data => resolve(data["geometri"]["wkt"]))
         .catch(err => reject(err));
     });
@@ -164,9 +158,7 @@ export default class VegvesenApiService {
       fetch(this.MUNICIPALITY_REGION_API_URL + "?inkluder=vegobjekt", {
         headers: headers
       })
-        .then(result => {
-          return result.json();
-        })
+        .then(result => result.json())
         .then(data => {
           data.forEach(municipality => {
             if (municipality["nummer"] == municipalityCode) {

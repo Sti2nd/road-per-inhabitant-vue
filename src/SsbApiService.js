@@ -45,9 +45,7 @@ export default class SSBAPIService {
     };
     return new Promise((resolve, reject) => {
       this._fetchNumInhabitantsFromServer(JSON.stringify(jsonQuery))
-        .then(response => {
-          resolve(response["value"][0]);
-        })
+        .then(response => resolve(response["value"][0]))
         .catch(err => reject(err));
     });
   }
@@ -64,9 +62,7 @@ export default class SSBAPIService {
         method: "POST",
         body: jsonQuery
       })
-        .then(response => {
-          return response.json();
-        })
+        .then(response => response.json())
         .then(data => resolve(data))
         .catch(err => reject(err));
     });
@@ -154,9 +150,7 @@ export default class SSBAPIService {
           Accept: "application/json"
         }
       })
-        .then(response => {
-          return response.json();
-        })
+        .then(response => response.json())
         .then(data => resolve(data))
         .catch(err => reject(err));
     });
