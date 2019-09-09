@@ -1,3 +1,5 @@
+import "./logger-init.js";
+
 import Vue from 'vue'
 import App from './App.vue'
 
@@ -9,6 +11,8 @@ import 'vue-material/dist/vue-material.min.css';
 import 'vue-material/dist/theme/default.css';
 import "leaflet/dist/leaflet.css";
 
+logger.setLevel(logger.WARN); // eslint-disable-line no-undef
+logger.info("Logger har started"); // eslint-disable-line no-undef
 
 Vue.config.productionTip = false;
 Vue.use(MdAutocomplete);

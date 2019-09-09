@@ -30,6 +30,10 @@ export default {
       .then(sortedMunicipalitesArray => {
         this.municipalities = sortedMunicipalitesArray;
       }).catch(err => {
+        // eslint-disable-next-line no-undef
+        logger.error("Could not retrieve sorted municipalities on page load");
+        // eslint-disable-next-line no-undef
+        logger.trace("This logger is too simple, it doesn't support stack trace");
         this.$emit("connectionTrouble");
         reject(err);
       })

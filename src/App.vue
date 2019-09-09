@@ -23,6 +23,8 @@ export default {
   }),
   methods: {
     retryAllRequests: function() {
+      // eslint-disable-next-line no-undef
+      logger.info("User clicked on 'retry' after connection issues");
       // Force MunicipalityContainer to update by changing its key
       this.municipalityContainerKey += 1;
       this.showSnackbar = false;

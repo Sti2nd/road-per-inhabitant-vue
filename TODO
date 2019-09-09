@@ -1,5 +1,5 @@
 [X] Avoid the pyramid of doom by chaining https://www.codingame.com/playgrounds/347/javascript-promises-mastering-the-asynchronous/traps-of-promises
-[ ] Check out a logger instead of console.log
-[ ] test
+[X] Check out a logger instead of console.log
+[X] test
 [ ] Change road calculation to multiply length by number of kjørefelt
 [ ] Show the date for which each information is valid
