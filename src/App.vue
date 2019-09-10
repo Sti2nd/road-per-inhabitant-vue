@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <h1>Bilvei per innbygger</h1>
-    <MunicipalityContainer :key="municipalityContainerKey" @connectionTrouble="showSnackbar = true"></MunicipalityContainer>
+    <MunicipalityContainer :key="municipalityContainerKey" @connectionTrouble="showSnackbar = true"/>
     <md-snackbar md-position="center" :md-duration="Infinity" :md-active.sync="showSnackbar">
       <span>Connection issues detected. Click the button to retry.</span>
       <md-button class="md-primary" @click="retryAllRequests">Retry</md-button>
