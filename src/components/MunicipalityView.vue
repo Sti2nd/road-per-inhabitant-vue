@@ -36,15 +36,6 @@
           <br />per innbygger i kommunen.
         </p>
       </div>
-      <div v-if="showMap" id="mapContainer">
-        <l-map ref="myMap" :zoom="9" :bounds="mapBounds">
-          <l-tile-layer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            :attribution="mapAttribution"
-          />
-          <l-geo-json ref="geojson" :geojson="municipality.polygon"></l-geo-json>
-        </l-map>
-      </div>
       <md-card-expand v-show="municipality.inhabitantYear">
         <md-card-actions>
           <md-card-expand-trigger>
@@ -54,7 +45,8 @@
         <md-card-expand-content>
           <md-card-content>
             <p>
-              Folketallet er fra 1. januar {{ municipality.inhabitantYear }} og er hentet fra
+              Folketallet er fra inngangen til {{ municipality.inhabitantQuarter }}.
+              kvartal {{ municipality.inhabitantYear }} og er hentet fra
               <a
                 href="https://www.ssb.no"
                 target="_blank"
@@ -79,6 +71,15 @@
           </md-card-content>
         </md-card-expand-content>
       </md-card-expand>
+      <div v-if="showMap" id="mapContainer">
+        <l-map ref="myMap" :zoom="9" :bounds="mapBounds">
+          <l-tile-layer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            :attribution="mapAttribution"
+          />
+          <l-geo-json ref="geojson" :geojson="municipality.polygon"></l-geo-json>
+        </l-map>
+      </div>
     </md-card-content>
   </md-card>
 </template>
@@ -110,6 +111,7 @@ export default {
       code: null,
       numInhabitants: null,
       inhabitantYear: null,
+      inhabitantQuarter: null,
       roadLength: null,
       polygon: null
     },
@@ -127,11 +129,15 @@ export default {
       this.municipality.name = municipalityObj["name"];
       this.municipality.code = municipalityObj["code"];
       ssbApiService
-        .getNumberOfInhabitants(municipalityObj["code"], new Date().getFullYear())
+        .getNumberOfInhabitants(
+          municipalityObj["code"],
+          new Date().getFullYear()
+        )
         .then(resultObj => {
           this.loadingInhabitants = false;
           this.municipality.numInhabitants = resultObj.numInhabitants;
           this.municipality.inhabitantYear = resultObj.year;
+          this.municipality.inhabitantQuarter = resultObj.quarter;
         });
       vegvesenApiService
         .getLengthOfRoads(municipalityObj["code"])

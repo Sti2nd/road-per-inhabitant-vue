@@ -3,25 +3,26 @@ export default class SSBAPIService {
     this.SSB_MUNICIPALITY_CODES_URL =
       "https://data.ssb.no/api/klass/v1/classifications/131/codes";
     this.SSB_MUNICIPALITY_INHABITANTS_URL =
-      "https://data.ssb.no/api/v0/no/table/05231/";
+      "https://data.ssb.no/api/v0/no/table/01222/";
 
     this.sortedMunicipalityNames = [];
     this.municipalityToCode = new Map();
   }
 
   /**
-   * Get number of inhabitants in municipality. Returns an object that includes 
+   * Get number of inhabitants in municipality. Returns an object that includes
    * numInhabitants key
    * @param {string} municipalityCode SSB code for municipality
-   * @param {number} year The year for which to retrieve information
    */
-  getNumberOfInhabitants(municipalityCode, year) {
+  getNumberOfInhabitants(municipalityCode) {
+    let [year, quarter, quarterString] = this.getCurrentQuarter();
+
     let jsonQuery = {
       query: [
         {
           code: "Region",
           selection: {
-            filter: "agg_single:KommNyeste",
+            filter: "item",
             values: [municipalityCode]
           }
         },
@@ -29,14 +30,14 @@ export default class SSBAPIService {
           code: "ContentsCode",
           selection: {
             filter: "item",
-            values: ["Folkemengde"]
+            values: ["Folketallet1"]
           }
         },
         {
           code: "Tid",
           selection: {
             filter: "item",
-            values: [year]
+            values: [quarterString]
           }
         }
       ],
@@ -47,14 +48,42 @@ export default class SSBAPIService {
     return new Promise((resolve, reject) => {
       this._fetchNumberOfInhabitants(JSON.stringify(jsonQuery))
         .then(response => {
-          let responseObj = {
-            municipalityCode: municipalityCode,
-            numInhabitants: response["value"][0],
-            year: year
-          }
+          let responseObj = this.createResponseObject(
+            municipalityCode,
+            response,
+            year,
+            quarter
+          );
           resolve(responseObj);
         })
-        .catch(err => reject(err));
+        .catch(() => {
+          // Usually SSB doesn't have data for this quarter so try last quarter!
+          let [newYear, newQuarter, newQuarterString] = this.getPreviousQuarter(
+            year,
+            quarter,
+            quarterString
+          );
+          let newQuery = jsonQuery.query.filter(e => e.code !== "Tid");
+          newQuery.push({
+            code: "Tid",
+            selection: {
+              filter: "item",
+              values: [newQuarterString]
+            }
+          });
+          jsonQuery.query = newQuery;
+          this._fetchNumberOfInhabitants(JSON.stringify(jsonQuery))
+            .then(response => {
+              let responseObj = this.createResponseObject(
+                municipalityCode,
+                response,
+                newYear,
+                newQuarter
+              );
+              resolve(responseObj);
+            })
+            .catch(err => reject(err));
+        });
     });
   }
 
@@ -64,7 +93,7 @@ export default class SSBAPIService {
    */
   _fetchNumberOfInhabitants(jsonQuery) {
     // To find API use https://data.ssb.no/api/v0/en/console/ and enter table
-    // 05231.
+    // 01222.
     return new Promise((resolve, reject) => {
       fetch(this.SSB_MUNICIPALITY_INHABITANTS_URL, {
         method: "POST",
@@ -147,7 +176,7 @@ export default class SSBAPIService {
    * Request data from API
    * @param year The year for which to retrieve data
    */
-  _fetchNamesAndCodes = (year) => {
+  _fetchNamesAndCodes = year => {
     // SSB documentation https://data.ssb.no/api/klass/v1/api-guide.html
     let fromQuery = "from=" + year + "-01-01"; // required by the API
     let url = this.SSB_MUNICIPALITY_CODES_URL + "?" + fromQuery;
@@ -190,5 +219,60 @@ export default class SSBAPIService {
       }
       return array2;
     }
+  }
+
+  /**
+   * Returns year, quarter and quarterString for the quarter before the given
+   * @param {number} currentYear
+   * @param {number} currentQuarter
+   */
+  getPreviousQuarter(currentYear, currentQuarter) {
+    let year = currentYear;
+    let quarter = currentQuarter;
+    if (quarter > 1) {
+      quarter = quarter - 1;
+    } else if (quarter === 0) {
+      quarter = 4;
+      year = year - 1;
+    }
+    let quarterString = year + "K" + quarter;
+    return [year, quarter, quarterString];
+  }
+
+  /**
+   * Returns year, quarter and quarterString
+   */
+  getCurrentQuarter() {
+    let currentDate = new Date();
+    let year = currentDate.getFullYear();
+    let quarter = null;
+    let month = currentDate.getMonth();
+    if (month < 3) {
+      quarter = 1;
+    } else if (month < 6) {
+      quarter = 2;
+    } else if (month < 9) {
+      quarter = 3;
+    } else if (month < 12) {
+      quarter = 4;
+    }
+    let quarterString = year + "K" + quarter;
+    return [year, quarter, quarterString];
+  }
+
+  /**
+   * Return an object with municipalityCode, numInhabitants, year and quarter
+   * @param {string} municipalityCode Official SSB municipality code
+   * @param {JSON} response The JSON retrieved from SSb
+   * @param {number} year
+   * @param {number} quarter
+   */
+  createResponseObject(municipalityCode, response, year, quarter) {
+    return {
+      municipalityCode: municipalityCode,
+      numInhabitants: response["value"][0],
+      year: year,
+      quarter: quarter
+    };
   }
 }

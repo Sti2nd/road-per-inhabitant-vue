@@ -43,15 +43,14 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 
 #app h1 {
   margin-bottom: 1em;
+  margin-top: 1em;
 }
 
 .headlineSection {
-  margin-left: 1em;
-  margin-right: 1em;
+  margin: 3em 1em 3em 1em;
 }
 </style>
