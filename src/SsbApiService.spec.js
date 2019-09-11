@@ -1,5 +1,4 @@
 import SsbApiService from "./SsbApiService";
-import { doesNotReject } from "assert";
 
 describe("insertIntoSortedArray method", () => {
   const ssbApiService = new SsbApiService();
@@ -45,7 +44,7 @@ describe("insertIntoSortedArray method", () => {
 describe("_issueRequestForNamesAndCodes method", () => {
   const ssbApiService = new SsbApiService();
   // mock depending function
-  ssbApiService._fetchMunicipalityInfo = jest.fn(() => {
+  ssbApiService._fetchNamesAndCodes = jest.fn(() => {
     return new Promise(resolve => {
       resolve({
         codes: [
@@ -93,9 +92,9 @@ describe("_issueRequestForNamesAndCodes method", () => {
       });
     });
   });
-  const mock = jest.spyOn(ssbApiService, "_fetchMunicipalityInfo");
+  const mock = jest.spyOn(ssbApiService, "_fetchNamesAndCodes");
 
-  it("calls the _fetchMunicipalityInfo method", () => {
+  it("calls the _fetchNamesAndCodes method", () => {
     expect(mock).not.toBeCalled();
     ssbApiService._issueRequestForNamesAndCodes();
     expect(mock).toBeCalled();
@@ -222,7 +221,7 @@ describe("getters for municipality names and codes:", () => {
 
 describe("getNumberOfInhabitants method", () => {
   const ssbApiService = new SsbApiService();
-  ssbApiService._fetchNumInhabitantsFromServer = jest.fn(() => {
+  ssbApiService._fetchNumberOfInhabitants = jest.fn(() => {
     return new Promise(resolve => {
       resolve(
         {
@@ -238,12 +237,12 @@ describe("getNumberOfInhabitants method", () => {
       );
     });
   });
-  let mock = jest.spyOn(ssbApiService, "_fetchNumInhabitantsFromServer");
+  let mock = jest.spyOn(ssbApiService, "_fetchNumberOfInhabitants");
 
   it("returns a number", () => {
     expect.assertions(2);
     expect(mock).not.toBeCalled();
-    return ssbApiService.getNumberOfInhabitants("1411").then(result => {
+    return ssbApiService.getNumberOfInhabitants("1411", 2019).then(result => {
       expect(typeof result == 'number').toBeTruthy();
     });
   })

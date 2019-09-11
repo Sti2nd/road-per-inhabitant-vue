@@ -26,7 +26,7 @@ export default {
   }),  
   created: function() {
     ssbApiService
-      .getSortedMunicipalityNames()
+      .getSortedMunicipalityNames(new Date().getFullYear())
       .then(sortedMunicipalitesArray => {
         this.municipalities = sortedMunicipalitesArray;
       }).catch(err => {
@@ -45,5 +45,6 @@ export default {
 #municipalityContainer {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
 }
 </style>

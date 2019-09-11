@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <h1>Bilvei per innbygger</h1>
+    <div class="headlineSection">
+      <h1 class="md-display-2">Bilvei per innbygger</h1>
+      <h3 class="md-title">Sammenligne mengden vei i forskjellige kommuner</h3>
+    </div>
     <MunicipalityContainer :key="municipalityContainerKey" @connectionTrouble="showSnackbar = true"/>
     <md-snackbar md-position="center" :md-duration="Infinity" :md-active.sync="showSnackbar">
       <span>Connection issues detected. Click the button to retry.</span>
@@ -45,5 +48,10 @@ export default {
 
 #app h1 {
   margin-bottom: 1em;
+}
+
+.headlineSection {
+  margin-left: 1em;
+  margin-right: 1em;
 }
 </style>

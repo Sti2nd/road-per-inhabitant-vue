@@ -10,11 +10,12 @@ export default class SSBAPIService {
   }
 
   /**
-   * Get number of inhabitants in municipality
+   * Get number of inhabitants in municipality. Returns an object that includes 
+   * numInhabitants key
    * @param {string} municipalityCode SSB code for municipality
+   * @param {number} year The year for which to retrieve information
    */
-  getNumberOfInhabitants(municipalityCode) {
-    let year = "2018";
+  getNumberOfInhabitants(municipalityCode, year) {
     let jsonQuery = {
       query: [
         {
@@ -44,8 +45,15 @@ export default class SSBAPIService {
       }
     };
     return new Promise((resolve, reject) => {
-      this._fetchNumInhabitantsFromServer(JSON.stringify(jsonQuery))
-        .then(response => resolve(response["value"][0]))
+      this._fetchNumberOfInhabitants(JSON.stringify(jsonQuery))
+        .then(response => {
+          let responseObj = {
+            municipalityCode: municipalityCode,
+            numInhabitants: response["value"][0],
+            year: year
+          }
+          resolve(responseObj);
+        })
         .catch(err => reject(err));
     });
   }
@@ -54,7 +62,7 @@ export default class SSBAPIService {
    *
    * @param {string} jsonQuery A JSON string query as defined by the API
    */
-  _fetchNumInhabitantsFromServer(jsonQuery) {
+  _fetchNumberOfInhabitants(jsonQuery) {
     // To find API use https://data.ssb.no/api/v0/en/console/ and enter table
     // 05231.
     return new Promise((resolve, reject) => {
@@ -73,9 +81,10 @@ export default class SSBAPIService {
    * @param {string} municipalityName
    */
   getMunicipalityCode(municipalityName) {
+    let currentYear = new Date().getFullYear();
     return new Promise((resolve, reject) => {
       if (this.municipalityToCode.size === 0) {
-        this._issueRequestForNamesAndCodes()
+        this._issueRequestForNamesAndCodes(currentYear)
           .then(() => {
             resolve(this.municipalityToCode.get(municipalityName));
           })
@@ -88,11 +97,12 @@ export default class SSBAPIService {
 
   /**
    * Return list of municipality names sorted ascending.
+   * @param {number} year The year for which to retrieve information
    */
-  getSortedMunicipalityNames() {
+  getSortedMunicipalityNames(year) {
     return new Promise((resolve, reject) => {
       if (this.sortedMunicipalityNames.length === 0) {
-        this._issueRequestForNamesAndCodes()
+        this._issueRequestForNamesAndCodes(year)
           .then(newArray => {
             this.sortedMunicipalityNames = newArray;
             resolve(this.sortedMunicipalityNames);
@@ -108,10 +118,11 @@ export default class SSBAPIService {
    * Calls another function to request data and then handles the data.
    * @param {Array<string>} sortedMunicipalityNames An array with municipality names
    * sorted lexicographical
+   * @param {number} year The year for which to retrieve data
    */
-  _issueRequestForNamesAndCodes() {
+  _issueRequestForNamesAndCodes(year) {
     return new Promise((resolve, reject) => {
-      this._fetchMunicipalityInfo()
+      this._fetchNamesAndCodes(year)
         .then(data => {
           let newArray = [];
           data["codes"].forEach(elementObj => {
@@ -134,13 +145,11 @@ export default class SSBAPIService {
 
   /**
    * Request data from API
+   * @param year The year for which to retrieve data
    */
-  _fetchMunicipalityInfo = () => {
+  _fetchNamesAndCodes = (year) => {
     // SSB documentation https://data.ssb.no/api/klass/v1/api-guide.html
-
-    let currentYear = new Date().getFullYear();
-    // TODO: Use current date and not only year?
-    let fromQuery = "from=" + currentYear + "-01-01"; // required by the API
+    let fromQuery = "from=" + year + "-01-01"; // required by the API
     let url = this.SSB_MUNICIPALITY_CODES_URL + "?" + fromQuery;
 
     return new Promise((resolve, reject) => {

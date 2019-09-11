@@ -1,41 +1,86 @@
 <template>
-  <div class="municipalityView">
-    <h3>
-      Kommune {{ municipalityNumber }}
-      <span
-        v-show="municipality.name"
-      >- {{ municipality.name }}</span>
-    </h3>
-    <MunicipalityInput
-      :municipalities="municipalities"
-      @selectedMunicipality="handleSelectedMunicipality"
-      @inputCleared="handleInputCleared"
-    ></MunicipalityInput>
-    <div class="municipalityInfo">
-      <p class="md-body-1" v-show="municipality.numInhabitants">har {{ municipality.numInhabitants }} innbyggere</p>
-      <div v-show="loadingInhabitants == true">
-        <md-progress-spinner :md-diameter="30" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
+  <md-card class="municipalityView">
+    <md-card-header>
+      <h3 class="md-title">
+        <!-- prettier-ignore-start -->
+        <!-- Because we don't want a space between the colon and the municipalityNumber-->
+        Kommune {{ municipalityNumber }}
+        <span v-show="municipality.name">: {{ municipality.name }}</span>
+        <!-- prettier-ignore-end -->
+      </h3>
+    </md-card-header>
+    <md-card-content>
+      <MunicipalityInput
+        :municipalities="municipalities"
+        @selectedMunicipality="handleSelectedMunicipality"
+        @inputCleared="handleInputCleared"
+      ></MunicipalityInput>
+      <div class="municipalityInfo">
+        <p
+          class="md-body-1"
+          v-show="municipality.numInhabitants"
+        >har {{ municipality.numInhabitants }} innbyggere</p>
+        <div v-show="loadingInhabitants == true">
+          <md-progress-spinner :md-diameter="30" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
+        </div>
+        <p
+          class="md-body-1"
+          v-show="municipality.roadLength"
+        >og har {{ municipality.roadLength }} meter bilvei</p>
+        <div v-show="loadingRoadLength == true">
+          <md-progress-spinner :md-diameter="30" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
+        </div>
+        <p v-show="municipality.numInhabitants && municipality.roadLength">
+          som betyr at det er
+          <strong>{{ Number.parseFloat(municipality.roadLength / municipality.numInhabitants).toFixed(2) }}</strong> meter bilvei
+          <br />per innbygger i kommunen.
+        </p>
       </div>
-      <p class="md-body-1" v-show="municipality.roadLength">og har {{ municipality.roadLength }} meter bilvei</p>
-      <div v-show="loadingRoadLength == true">
-        <md-progress-spinner :md-diameter="30" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
+      <div v-if="showMap" id="mapContainer">
+        <l-map ref="myMap" :zoom="9" :bounds="mapBounds">
+          <l-tile-layer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            :attribution="mapAttribution"
+          />
+          <l-geo-json ref="geojson" :geojson="municipality.polygon"></l-geo-json>
+        </l-map>
       </div>
-      <p v-show="municipality.numInhabitants && municipality.roadLength">
-        som betyr at det er
-        <strong>{{ Number.parseFloat(municipality.roadLength / municipality.numInhabitants).toFixed(2) }}</strong> meter bilvei
-        <br />per innbygger i kommunen.
-      </p>
-    </div>
-    <div v-if="showMap" id="mapContainer">
-      <l-map ref="myMap" :zoom="9" :bounds="mapBounds">
-        <l-tile-layer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          :attribution="mapAttribution"
-        />
-        <l-geo-json ref="geojson" :geojson="municipality.polygon"></l-geo-json>
-      </l-map>
-    </div>
-  </div>
+      <md-card-expand v-show="municipality.inhabitantYear">
+        <md-card-actions>
+          <md-card-expand-trigger>
+            <md-button class="md-raised">Informasjon om tallene</md-button>
+          </md-card-expand-trigger>
+        </md-card-actions>
+        <md-card-expand-content>
+          <md-card-content>
+            <p>
+              Folketallet er fra 1. januar {{ municipality.inhabitantYear }} og er hentet fra
+              <a
+                href="https://www.ssb.no"
+                target="_blank"
+              >SSB</a>.
+            </p>
+            <p>
+              Antall meter vei er hentet fra
+              <a
+                href="https://www.vegvesen.no/fag/teknologi/nasjonal+vegdatabank"
+                target="_blank"
+              >NVDB</a>.
+              Private veier og skogsveier er filtrert ut, og bare eksisterende veier blir summert. Se
+              <a
+                href="https://api.vegdata.no/verdi/vegreferanse.html"
+                target="_blank"
+              >
+                dokumentasjonen på
+                vegreferanser
+              </a> under kategori og status for å se hva slags veier som ikke er med i
+              beregningen.
+            </p>
+          </md-card-content>
+        </md-card-expand-content>
+      </md-card-expand>
+    </md-card-content>
+  </md-card>
 </template>
 
 <script>
@@ -64,6 +109,7 @@ export default {
       name: null,
       code: null,
       numInhabitants: null,
+      inhabitantYear: null,
       roadLength: null,
       polygon: null
     },
@@ -81,10 +127,11 @@ export default {
       this.municipality.name = municipalityObj["name"];
       this.municipality.code = municipalityObj["code"];
       ssbApiService
-        .getNumberOfInhabitants(municipalityObj["code"])
-        .then(numInhabitants => {
+        .getNumberOfInhabitants(municipalityObj["code"], new Date().getFullYear())
+        .then(resultObj => {
           this.loadingInhabitants = false;
-          this.municipality.numInhabitants = numInhabitants;
+          this.municipality.numInhabitants = resultObj.numInhabitants;
+          this.municipality.inhabitantYear = resultObj.year;
         });
       vegvesenApiService
         .getLengthOfRoads(municipalityObj["code"])
@@ -110,6 +157,7 @@ export default {
       this.municipality.name = null;
       this.municipality.code = null;
       this.municipality.polygon = null;
+      this.municipality.inhabitantYear = null;
     }
   }
 };
@@ -118,11 +166,25 @@ export default {
 <style scoped>
 #mapContainer {
   height: 50%;
+  height: 40vh;
 }
 
 .municipalityView {
   flex-grow: 1;
-  min-width: 300px;
-  height: 80vh;
+  min-width: 320px;
+  max-width: 600px;
+}
+
+@media screen and (max-width: 712px) {
+  .municipalityView {
+    margin-bottom: 1em;
+  }
+}
+
+@media screen and (min-width: 657px) {
+  .municipalityView {
+    margin-right: 1em;
+    margin-left: 1em;
+  }
 }
 </style>
