@@ -2,9 +2,9 @@
   <div id="app">
     <div class="headlineSection">
       <h1 class="md-display-2">Bilvei per innbygger</h1>
-      <h3 class="md-title">Sammenligne mengden vei i forskjellige kommuner</h3>
+      <h3 class="md-title">Sammenlign mengden vei i forskjellige kommuner</h3>
     </div>
-    <MunicipalityContainer :key="municipalityContainerKey" @connectionTrouble="showSnackbar = true"/>
+    <CardContainer :key="cardContainerKey" @connectionTrouble="showSnackbar = true"/>
     <md-snackbar md-position="center" :md-duration="Infinity" :md-active.sync="showSnackbar">
       <span>Connection issues detected. Click the button to retry.</span>
       <md-button class="md-primary" @click="retryAllRequests">Retry</md-button>
@@ -13,23 +13,23 @@
 </template>
 
 <script>
-import MunicipalityContainer from "./components/MunicipalityContainer";
+import CardContainer from "./components/CardContainer";
 
 export default {
   name: "app",
   components: {
-    MunicipalityContainer
+    CardContainer
   },
   data: () => ({
     showSnackbar: false,
-    municipalityContainerKey: 1
+    cardContainerKey: 1
   }),
   methods: {
     retryAllRequests: function() {
       // eslint-disable-next-line no-undef
       logger.info("User clicked on 'retry' after connection issues");
       // Force MunicipalityContainer to update by changing its key
-      this.municipalityContainerKey += 1;
+      this.cardContainerKey += 1;
       this.showSnackbar = false;
     }
   }

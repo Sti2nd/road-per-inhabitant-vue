@@ -1,16 +1,16 @@
 <template>
-  <div id="municipalityContainer">
-    <MunicipalityView
+  <div id="cardContainer">
+    <MunicipalityCard
       :municipalities="municipalities"
       v-for="number in numbers"
       :key="number"
       :municipalityNumber="number"
-    ></MunicipalityView>
+    ></MunicipalityCard>
   </div>
 </template>
 
 <script>
-import MunicipalityView from "./MunicipalityView";
+import MunicipalityCard from "./MunicipalityCard";
 import SsbApiService from "../SsbApiService";
 import { reject } from 'q';
 const ssbApiService = new SsbApiService();
@@ -18,7 +18,7 @@ const ssbApiService = new SsbApiService();
 export default {
   name: "MunicipalityContainer",
   components: {
-    MunicipalityView
+    MunicipalityCard
   },
   data: () => ({
     numbers: [1, 2],
@@ -42,7 +42,7 @@ export default {
 </script>
 
 <style scoped>
-#municipalityContainer {
+#cardContainer {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;

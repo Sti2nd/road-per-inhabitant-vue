@@ -4,8 +4,7 @@
       <h3 class="md-title">
         <!-- prettier-ignore-start -->
         <!-- Because we don't want a space between the colon and the municipalityNumber-->
-        Kommune {{ municipalityNumber }}
-        <span v-show="municipality.name">: {{ municipality.name }}</span>
+        Kommune {{ municipalityNumber }}<span v-show="municipality.name">: {{ municipality.name }}</span>
         <!-- prettier-ignore-end -->
       </h3>
     </md-card-header>
@@ -32,74 +31,36 @@
         </div>
         <p v-show="municipality.numInhabitants && municipality.roadLength">
           som betyr at det er
-          <strong>{{ Number.parseFloat(municipality.roadLength / municipality.numInhabitants).toFixed(2) }}</strong> meter bilvei
+          <strong>{{ roadPerInhabitant }}</strong> meter bilvei
           <br />per innbygger i kommunen.
         </p>
       </div>
-      <md-card-expand v-show="municipality.inhabitantYear">
-        <md-card-actions>
-          <md-card-expand-trigger>
-            <md-button class="md-raised">Informasjon om tallene</md-button>
-          </md-card-expand-trigger>
-        </md-card-actions>
-        <md-card-expand-content>
-          <md-card-content>
-            <p>
-              Folketallet er fra inngangen til {{ municipality.inhabitantQuarter }}.
-              kvartal {{ municipality.inhabitantYear }} og er hentet fra
-              <a
-                href="https://www.ssb.no"
-                target="_blank"
-              >SSB</a>.
-            </p>
-            <p>
-              Antall meter vei er hentet fra
-              <a
-                href="https://www.vegvesen.no/fag/teknologi/nasjonal+vegdatabank"
-                target="_blank"
-              >NVDB</a>.
-              Private veier og skogsveier er filtrert ut, og bare eksisterende veier blir summert. Se
-              <a
-                href="https://api.vegdata.no/verdi/vegreferanse.html"
-                target="_blank"
-              >
-                dokumentasjonen på
-                vegreferanser
-              </a> under kategori og status for å se hva slags veier som ikke er med i
-              beregningen.
-            </p>
-          </md-card-content>
-        </md-card-expand-content>
-      </md-card-expand>
-      <div v-if="showMap" id="mapContainer">
-        <l-map ref="myMap" :zoom="9" :bounds="mapBounds">
-          <l-tile-layer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            :attribution="mapAttribution"
-          />
-          <l-geo-json ref="geojson" :geojson="municipality.polygon"></l-geo-json>
-        </l-map>
-      </div>
+      <CardExpand v-show="municipality.inhabitantYear"
+        :inhabitantQuarter="municipality.inhabitantQuarter"
+        :inhabitantYear="municipality.inhabitantYear"
+      />
+      <MapContainer v-if="showMap" :municipalityPolygon="municipality.polygon"/>
     </md-card-content>
   </md-card>
 </template>
 
 <script>
 import MunicipalityInput from "./MunicipalityInput";
+import CardExpand from "./CardExpand";
+import MapContainer from "./MapContainer";
 import SsbApiService from "../SsbApiService";
 import VegvesenApiService from "../VegvesenApiService";
-import { LMap, LTileLayer, LGeoJson } from "vue2-leaflet";
+
 
 const ssbApiService = new SsbApiService();
 const vegvesenApiService = new VegvesenApiService();
 
 export default {
-  name: "MunicipalityView",
+  name: "MunicipalityCard",
   components: {
     MunicipalityInput,
-    LMap,
-    LTileLayer,
-    LGeoJson
+    CardExpand,
+    MapContainer,
   },
   props: {
     municipalityNumber: Number,
@@ -117,11 +78,15 @@ export default {
     },
     loadingRoadLength: false,
     loadingInhabitants: false,
-    mapAttribution:
-      "Map data © <a href='https://openstreetmap.org' target='_blank'>OpenStreetMap</a> contributors",
-    mapBounds: null,
     showMap: false
   }),
+  computed: {
+    roadPerInhabitant: function() {
+      return Number.parseFloat(
+        this.municipality.roadLength / this.municipality.numInhabitants
+      ).toFixed(2);
+    }
+  },
   methods: {
     handleSelectedMunicipality: function(municipalityObj) {
       this.loadingRoadLength = true;
@@ -150,10 +115,6 @@ export default {
         .then(coordinates => {
           this.municipality.polygon = coordinates;
           this.showMap = true;
-          this.$nextTick(() => {
-            let bounds = this.$refs.geojson.mapObject.getBounds();
-            this.$refs.myMap.mapObject.fitBounds(bounds);
-          });
         });
     },
     handleInputCleared: function() {
@@ -164,26 +125,22 @@ export default {
       this.municipality.code = null;
       this.municipality.polygon = null;
       this.municipality.inhabitantYear = null;
+      this.municipality.inhabitantQuarter = null;
     }
   }
 };
 </script>
 
 <style scoped>
-#mapContainer {
-  height: 50%;
-  height: 40vh;
-}
-
 .municipalityView {
   flex-grow: 1;
   min-width: 320px;
-  max-width: 600px;
+  max-width: 450px;
 }
 
-@media screen and (max-width: 712px) {
+@media screen and (max-width: 1024px) {
   .municipalityView {
-    margin-bottom: 1em;
+    margin-bottom: 5em;
   }
 }
 
