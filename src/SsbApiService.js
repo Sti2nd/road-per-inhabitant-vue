@@ -1,3 +1,5 @@
+import Logger from "js-logger";
+
 export default class SSBAPIService {
   constructor() {
     this.SSB_MUNICIPALITY_CODES_URL =
@@ -15,40 +17,16 @@ export default class SSBAPIService {
    * @param {string} municipalityCode SSB code for municipality
    */
   getNumberOfInhabitants(municipalityCode) {
-    let [year, quarter, quarterString] = this.getCurrentQuarter();
+    let [year, quarter, quarterString] = this._getCurrentQuarter();
+    let jsonQuery = this._getJSONQueryForNumInhabitants(
+      municipalityCode,
+      quarterString
+    );
 
-    let jsonQuery = {
-      query: [
-        {
-          code: "Region",
-          selection: {
-            filter: "item",
-            values: [municipalityCode]
-          }
-        },
-        {
-          code: "ContentsCode",
-          selection: {
-            filter: "item",
-            values: ["Folketallet1"]
-          }
-        },
-        {
-          code: "Tid",
-          selection: {
-            filter: "item",
-            values: [quarterString]
-          }
-        }
-      ],
-      response: {
-        format: "json-stat2"
-      }
-    };
     return new Promise((resolve, reject) => {
       this._fetchNumberOfInhabitants(JSON.stringify(jsonQuery))
         .then(response => {
-          let responseObj = this.createResponseObject(
+          let responseObj = this._createResponseObject(
             municipalityCode,
             response,
             year,
@@ -57,24 +35,19 @@ export default class SSBAPIService {
           resolve(responseObj);
         })
         .catch(() => {
-          // Usually SSB doesn't have data for this quarter so try last quarter!
-          let [newYear, newQuarter, newQuarterString] = this.getPreviousQuarter(
-            year,
-            quarter,
-            quarterString
+          Logger.info(
+            "One 404 error as expected... SSB hasn't published data on current quarter, " +
+              "so getting last quarter instead"
           );
-          let newQuery = jsonQuery.query.filter(e => e.code !== "Tid");
-          newQuery.push({
-            code: "Tid",
-            selection: {
-              filter: "item",
-              values: [newQuarterString]
-            }
-          });
-          jsonQuery.query = newQuery;
-          this._fetchNumberOfInhabitants(JSON.stringify(jsonQuery))
+          // Usually SSB doesn't have data for this quarter so try last quarter!
+          let [newJsonQuery, newYear, newQuarter] = this._getJsonQueryForPreviousQuarter(
+            jsonQuery,
+            year,
+            quarter
+          );
+          this._fetchNumberOfInhabitants(JSON.stringify(newJsonQuery))
             .then(response => {
-              let responseObj = this.createResponseObject(
+              let responseObj = this._createResponseObject(
                 municipalityCode,
                 response,
                 newYear,
@@ -226,7 +199,7 @@ export default class SSBAPIService {
    * @param {number} currentYear
    * @param {number} currentQuarter
    */
-  getPreviousQuarter(currentYear, currentQuarter) {
+  _getPreviousQuarter(currentYear, currentQuarter) {
     let year = currentYear;
     let quarter = currentQuarter;
     if (quarter > 1) {
@@ -242,7 +215,7 @@ export default class SSBAPIService {
   /**
    * Returns year, quarter and quarterString
    */
-  getCurrentQuarter() {
+  _getCurrentQuarter() {
     let currentDate = new Date();
     let year = currentDate.getFullYear();
     let quarter = null;
@@ -267,12 +240,68 @@ export default class SSBAPIService {
    * @param {number} year
    * @param {number} quarter
    */
-  createResponseObject(municipalityCode, response, year, quarter) {
+  _createResponseObject(municipalityCode, response, year, quarter) {
     return {
       municipalityCode: municipalityCode,
       numInhabitants: response["value"][0],
       year: year,
       quarter: quarter
     };
+  }
+
+  /**
+   * Returns an object to be used as JSON query.
+   */
+  _getJSONQueryForNumInhabitants(municipalityCode, quarterString) {
+    return {
+      query: [
+        {
+          code: "Region",
+          selection: {
+            filter: "item",
+            values: [municipalityCode]
+          }
+        },
+        {
+          code: "ContentsCode",
+          selection: {
+            filter: "item",
+            values: ["Folketallet1"]
+          }
+        },
+        {
+          code: "Tid",
+          selection: {
+            filter: "item",
+            values: [quarterString]
+          }
+        }
+      ],
+      response: {
+        format: "json-stat2"
+      }
+    };
+  }
+
+  /**
+   * Returns JSON query, year and quarter for the previous quarter.
+   * @param {JSON} jsonQuery JSON query as defined by the API
+   */
+  _getJsonQueryForPreviousQuarter(jsonQuery, year, quarter) {
+    let newJsonQuery = JSON.parse(JSON.stringify(jsonQuery));
+    let [newYear, newQuarter, newQuarterString] = this._getPreviousQuarter(
+      year,
+      quarter
+    );
+    let newQuery = newJsonQuery.query.filter(e => e.code !== "Tid");
+    newQuery.push({
+      code: "Tid",
+      selection: {
+        filter: "item",
+        values: [newQuarterString]
+      }
+    });
+    newJsonQuery.query = newQuery;
+    return [newJsonQuery, newYear, newQuarter]
   }
 }
