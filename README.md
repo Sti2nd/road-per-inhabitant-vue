@@ -1,4 +1,5 @@
 # road-per-inhabitant-vue
+Hosted on https://sti2nd.github.io/road-per-inhabitant-vue/
 
 ## Project setup
 ```
