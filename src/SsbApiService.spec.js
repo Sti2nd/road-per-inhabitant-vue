@@ -242,8 +242,8 @@ describe("getNumberOfInhabitants method", () => {
   it("returns a number", () => {
     expect.assertions(2);
     expect(mock).not.toBeCalled();
-    return ssbApiService.getNumberOfInhabitants("1411", 2019).then(result => {
-      expect(typeof result == 'number').toBeTruthy();
+    return ssbApiService.getNumberOfInhabitants("1411").then(resultObj => {
+      expect(typeof resultObj.numInhabitants == 'number').toBeTruthy();
     });
   })
 });
