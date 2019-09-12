@@ -8,6 +8,8 @@ import MdProgress from 'vue-material';
 import MdSnackbar from 'vue-material';
 import MdButton from 'vue-material';
 import MdCard from 'vue-material';
+import MdTooltip from 'vue-material';
+import MdMenu from 'vue-material';
 import 'vue-material/dist/vue-material.min.css';
 import 'vue-material/dist/theme/default.css';
 import "leaflet/dist/leaflet.css";
@@ -22,7 +24,8 @@ Vue.use(
   MdSnackbar,
   MdButton,
   MdCard,
-  
+  MdTooltip,
+  MdMenu
 );
 
 new Vue({

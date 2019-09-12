@@ -1,5 +1,13 @@
 <template>
-  <md-card class="municipalityView">
+  <md-card class="municipalityCard">
+    <md-menu md-align-trigger md-size="small" class="cardMenu">
+      <md-button md-menu-trigger class="md-icon-button">
+        <md-icon :md-src="require('../assets/more.svg')" />
+      </md-button>
+      <md-menu-content>
+        <md-menu-item @click="removeMe">Remove this municipality card</md-menu-item>
+      </md-menu-content>
+    </md-menu>
     <md-card-header>
       <h3 class="md-title">
         <span>Kommune {{ municipalityNumber }}</span>
@@ -124,28 +132,30 @@ export default {
       this.municipality.polygon = null;
       this.municipality.inhabitantYear = null;
       this.municipality.inhabitantQuarter = null;
+    },
+    removeMe: function() {
+      this.$emit("removeMe", this.municipalityNumber)
     }
   }
 };
 </script>
 
 <style scoped>
-.municipalityView {
+.municipalityCard {
   flex-grow: 1;
   min-width: 320px;
   max-width: 450px;
+  margin: 1em;
 }
 
 @media screen and (max-width: 1024px) {
-  .municipalityView {
-    margin-bottom: 5em;
+  .municipalityCard {
+    margin: 0 0 5em 0;
   }
 }
 
-@media screen and (min-width: 657px) {
-  .municipalityView {
-    margin-right: 1em;
-    margin-left: 1em;
-  }
+.cardMenu {
+  position: absolute;
+  right: 0;
 }
 </style>
