@@ -2,10 +2,8 @@
   <md-card class="municipalityView">
     <md-card-header>
       <h3 class="md-title">
-        <!-- prettier-ignore-start -->
-        <!-- Because we don't want a space between the colon and the municipalityNumber-->
-        Kommune {{ municipalityNumber }}<span v-show="municipality.name">: {{ municipality.name }}</span>
-        <!-- prettier-ignore-end -->
+        <span>Kommune {{ municipalityNumber }}</span>
+        <span v-show="municipality.name">: {{ municipality.name }}</span>
       </h3>
     </md-card-header>
     <md-card-content>
@@ -35,11 +33,12 @@
           <br />per innbygger i kommunen.
         </p>
       </div>
-      <CardExpand v-show="municipality.inhabitantYear"
+      <CardExpand
+        v-show="municipality.inhabitantYear"
         :inhabitantQuarter="municipality.inhabitantQuarter"
         :inhabitantYear="municipality.inhabitantYear"
       />
-      <MapContainer v-if="showMap" :municipalityPolygon="municipality.polygon"/>
+      <MapContainer v-if="showMap" :municipalityPolygon="municipality.polygon" />
     </md-card-content>
   </md-card>
 </template>
@@ -51,7 +50,6 @@ import MapContainer from "./MapContainer";
 import SsbApiService from "../SsbApiService";
 import VegvesenApiService from "../VegvesenApiService";
 
-
 const ssbApiService = new SsbApiService();
 const vegvesenApiService = new VegvesenApiService();
 
@@ -60,7 +58,7 @@ export default {
   components: {
     MunicipalityInput,
     CardExpand,
-    MapContainer,
+    MapContainer
   },
   props: {
     municipalityNumber: Number,
