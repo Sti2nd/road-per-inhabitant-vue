@@ -31,7 +31,7 @@
         <p
           class="md-body-1"
           v-show="municipality.roadLength"
-        >og har {{ municipality.roadLength }} meter bilvei</p>
+        >og har {{ Number.parseFloat(municipality.roadLength / 1000).toFixed(1) }} km bilvei</p>
         <div v-show="loadingRoadLength == true">
           <md-progress-spinner :md-diameter="30" :md-stroke="3" md-mode="indeterminate"></md-progress-spinner>
         </div>
@@ -134,7 +134,7 @@ export default {
       this.municipality.inhabitantQuarter = null;
     },
     removeMe: function() {
-      this.$emit("removeMe", this.municipalityNumber)
+      this.$emit("removeMe", this.municipalityNumber);
     }
   }
 };
