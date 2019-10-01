@@ -24,6 +24,71 @@ export default class SSBAPIService {
     );
 
     return new Promise((resolve, reject) => {
+      this._getNumberOfInhabitants(jsonQuery, year, quarter, municipalityCode)
+        .then(responseObj => resolve(responseObj))
+        .catch(params => {
+          Logger.info(
+            "One 404 error as expected... SSB hasn't published data on current quarter, " +
+              "so getting last quarter instead"
+          );
+          // Usually SSB doesn't have data for this quarter so try 1 quarter earlier
+          this._getNumberOfInhabitantsPreviousQuarter(...params)
+            .then(responseObj => resolve(responseObj))
+            .catch(params => {
+              Logger.info(
+                "Two 404 errors... also as expected! You are probably finding yourself " +
+                "early in a new quarter and SSB hasn't published data on the previous quarter" +
+                " yet. We will be getting data from 2 quarters ago"
+              );
+              // In the early days of a new quarter we need to get 2 quarters earlier
+              this._getNumberOfInhabitantsPreviousQuarter(...params)
+                .then(responseObj => resolve(responseObj))
+                .catch(() => reject("This was not expected :("));
+            });
+        });
+    });
+  }
+
+  /**
+   * Retrieves the information for one quarter earlier than the input
+   * @param {JSON} currentJsonQuery JSON query
+   * @param {*} currentYear A year
+   * @param {*} currentQuarter Number between 1 and 4
+   * @param {*} municipalityCode Offical SSB municipality code
+   */
+  _getNumberOfInhabitantsPreviousQuarter(
+    currentJsonQuery,
+    currentYear,
+    currentQuarter,
+    municipalityCode
+  ) {
+    let [
+      newJsonQuery,
+      newYear,
+      newQuarter
+    ] = this._getJsonQueryForPreviousQuarter(
+      currentJsonQuery,
+      currentYear,
+      currentQuarter
+    );
+
+    return this._getNumberOfInhabitants(
+      newJsonQuery,
+      newYear,
+      newQuarter,
+      municipalityCode
+    );
+  }
+
+  /**
+   * Returns the
+   * @param {JSON} jsonQuery JSON query
+   * @param {number} year The year
+   * @param {number} quarter Number between 1 and 4
+   * @param {number} municipalityCode Offical SSB municipality code
+   */
+  _getNumberOfInhabitants(jsonQuery, year, quarter, municipalityCode) {
+    return new Promise((resolve, reject) => {
       this._fetchNumberOfInhabitants(JSON.stringify(jsonQuery))
         .then(response => {
           let responseObj = this._createResponseObject(
@@ -34,29 +99,7 @@ export default class SSBAPIService {
           );
           resolve(responseObj);
         })
-        .catch(() => {
-          Logger.info(
-            "One 404 error as expected... SSB hasn't published data on current quarter, " +
-              "so getting last quarter instead"
-          );
-          // Usually SSB doesn't have data for this quarter so try last quarter!
-          let [newJsonQuery, newYear, newQuarter] = this._getJsonQueryForPreviousQuarter(
-            jsonQuery,
-            year,
-            quarter
-          );
-          this._fetchNumberOfInhabitants(JSON.stringify(newJsonQuery))
-            .then(response => {
-              let responseObj = this._createResponseObject(
-                municipalityCode,
-                response,
-                newYear,
-                newQuarter
-              );
-              resolve(responseObj);
-            })
-            .catch(err => reject(err));
-        });
+        .catch(() => reject([jsonQuery, year, quarter, municipalityCode]));
     });
   }
 
@@ -302,6 +345,6 @@ export default class SSBAPIService {
       }
     });
     newJsonQuery.query = newQuery;
-    return [newJsonQuery, newYear, newQuarter]
+    return [newJsonQuery, newYear, newQuarter];
   }
 }
