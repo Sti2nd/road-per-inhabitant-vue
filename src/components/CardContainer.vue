@@ -10,7 +10,7 @@
     <div id="addCardButtonContainer">
       <md-button class="md-fab md-primary" @click="addMunicipalityCard">
         <md-icon :md-src="require('../assets/plus_sign.svg')" class="md-size-2x" />
-        <md-tooltip md-direction="left">
+        <md-tooltip md-direction="top">
           <big>Add new municipality card</big>
         </md-tooltip>
       </md-button>
