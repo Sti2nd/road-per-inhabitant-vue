@@ -2,4 +2,4 @@
 [X] Check out a logger instead of console.log
 [X] test
 [ ] Change road calculation to multiply length by number of kjørefelt
-[ ] Show the date for which each information is valid
+[X] Show the date for which each information is valid

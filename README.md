@@ -11,20 +11,9 @@ npm install
 npm run start
 ```
 
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+### How to deploy to Github pages
+1. Make sure you have set the basename/basepath in Vue this is called publicPath https://cli.vuejs.org/config/#publicpath
+2. Push with `git subtree push --prefix dist origin master:gh-pages`
