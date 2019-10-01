@@ -1,6 +1,8 @@
 # road-per-inhabitant-vue
 Hosted on https://sti2nd.github.io/road-per-inhabitant-vue/
 
+Meningen med nettsiden er å sammenligne antall meter vei per innbygger mellom forskjellige kommuner. Merk at dette ikke gir en god fremstilling av infrastrukturen i kommunen. Foreløpig har jeg heller ikke tatt hensyn til bredde (f.eks. antall felt) på veien.
+
 ## Project setup
 ```
 npm install
