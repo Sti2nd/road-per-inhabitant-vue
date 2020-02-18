@@ -247,7 +247,7 @@ export default class SSBAPIService {
     let quarter = currentQuarter;
     if (quarter > 1) {
       quarter = quarter - 1;
-    } else if (quarter === 0) {
+    } else if (quarter === 1) {
       quarter = 4;
       year = year - 1;
     }
